@@ -316,14 +316,13 @@
 				<svg id="line-chart" role="img" aria-label="Weekly search interest by league"></svg>
 			</div>
 			<div class="note-tile" role="note" aria-label="Line chart design notes">
-				<h3>Line Chart Iteration</h3>
 				<p>
-					My first attempt asked for a histogram pulling straight from <code>sportsdata.csv</code>, but it overloaded the
-					layout and felt noisy.
+					My initial prompt was: 
+					'Make a histogram using HTML, CSS, D3.JS that will get posted online through github actions. sportsdata.csv has the data that must be used.'
 				</p>
 				<p>
-					I refined the prompt to focus on all four leagues in a single view—switching to a multi-series line chart that
-					now grows into an area on hover so the interaction stays lightweight and readable.
+					This took a very long time to load and provided a complicated graph with too much data, hence I added a new prompt to edit the existing code and remove unneccessary details.):
+					'I just need a chart that includes all of the data sets (f1, nba, nfll, premierLeague) instead of a bar chart, do a line chart that becomes an area graph when you hover the cursor over the specific data set. Do not add extra text, just keep the graph and its axis and data set'
 				</p>
 			</div>
 			<div class="chart-frame">
@@ -334,10 +333,9 @@
 				></svg>
 			</div>
 			<div class="note-tile" role="note" aria-label="Grid chart spacing update">
-				<h3>Grid Animation Tuning</h3>
 				<p>
-					Spacing the grid and tuning the intersection observer made the reveal feel intentional. The chart now begins
-					animating only once it settles fully into view, eliminating the premature motion from earlier drafts.
+					I spaced out the graphs more like this. also made the transition work better:
+					'the 2 graphs are too close to each other, causing the transition to activate too early. move the 2 graphs away from each other, and make the transition position dependent - i.e. start when the graph comes in to view and finish when it's fully in view.'
 				</p>
 			</div>
 			<div class="chart-frame venn-frame">
@@ -348,10 +346,8 @@
 				></svg>
 			</div>
 			<div class="note-tile" role="note" aria-label="Venn diagram transition note">
-				<h3>Venn Diagram Motion</h3>
 				<p>
-					Dialing in the entry directions for each circle was trickier than expected—the motion still nudges in a slightly
-					off-axis path, but the final overlap looks balanced and communicates the comparison clearly.
+					I struggled to orient the transition for the venn diagram correctly. It seems the LLM doesn't parse the directions correctly making the circles move in from the wrong sides, but it still looks ok.
 				</p>
 			</div>
 			<div class="chart-frame doodle-frame">
@@ -362,10 +358,9 @@
 				></svg>
 			</div>
 			<div class="note-tile" role="note" aria-label="Doodle interaction note">
-				<h3>Doodle Interaction Idea</h3>
 				<p>
-					I explored a color-in mechanic for the sketch, but without vector tooling on hand the bitmap couldn&rsquo;t accept
-					dynamic fills—so the playful flip animation became the primary interaction.
+					I initially wanted to have an interaction to color white areas on the sketch, but the LLM said:
+					'Vectorized, fillable SVG of doodlebob.png: Deferred - no vectorization tooling available in this environment.'
 				</p>
 			</div>
 			<div class="chart-frame">
@@ -376,10 +371,8 @@
 				></svg>
 			</div>
 			<div class="note-tile" role="note" aria-label="Temperature chart decision">
-				<h3>Temperature Scale Choice</h3>
 				<p>
-					Switching the data to Fahrenheit kept the bars above zero and closer to the reference aesthetic. The hover card
-					now shares the Celsius conversion so both perspectives stay available.
+					Initially wanted to do celsius for temperature. However, the value goes below 0 making it not ideal and not look like the reference. Hence, went with Farenheit and gave me an idea for the interaction.
 				</p>
 			</div>
 		</div>
