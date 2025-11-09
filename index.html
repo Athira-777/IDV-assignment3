@@ -39,6 +39,35 @@
 				border-radius: 18px;
 			}
 
+			.note-tile {
+				width: 100%;
+				background: linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
+				color: #e2e8f0;
+				padding: clamp(1.25rem, 3.5vw, 2rem);
+				border-radius: 18px;
+				box-shadow: 0 18px 36px rgba(15, 23, 42, 0.22);
+				border: 1px solid rgba(148, 163, 184, 0.25);
+			}
+
+			.note-tile h3 {
+				margin: 0 0 0.6rem;
+				font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				color: #f8fafc;
+			}
+
+			.note-tile p {
+				margin: 0.35rem 0;
+				font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+				line-height: 1.6;
+				color: rgba(226, 232, 240, 0.92);
+			}
+
+			.note-tile p:last-child {
+				margin-bottom: 0;
+			}
+
 			.chart-frame svg {
 				width: 100%;
 				display: block;
@@ -286,12 +315,30 @@
 			<div class="chart-frame">
 				<svg id="line-chart" role="img" aria-label="Weekly search interest by league"></svg>
 			</div>
+			<div class="note-tile" role="note" aria-label="Line chart design notes">
+				<h3>Line Chart Iteration</h3>
+				<p>
+					My first attempt asked for a histogram pulling straight from <code>sportsdata.csv</code>, but it overloaded the
+					layout and felt noisy.
+				</p>
+				<p>
+					I refined the prompt to focus on all four leagues in a single view—switching to a multi-series line chart that
+					now grows into an area on hover so the interaction stays lightweight and readable.
+				</p>
+			</div>
 			<div class="chart-frame">
 				<svg
 					id="grid-chart"
 					role="img"
 					aria-label="Grid network view of energy states"
 				></svg>
+			</div>
+			<div class="note-tile" role="note" aria-label="Grid chart spacing update">
+				<h3>Grid Animation Tuning</h3>
+				<p>
+					Spacing the grid and tuning the intersection observer made the reveal feel intentional. The chart now begins
+					animating only once it settles fully into view, eliminating the premature motion from earlier drafts.
+				</p>
 			</div>
 			<div class="chart-frame venn-frame">
 				<svg
@@ -300,12 +347,26 @@
 					aria-label="Three-set Venn diagram comparing Laksa, Chilli Crab, and Nasi Lemak"
 				></svg>
 			</div>
+			<div class="note-tile" role="note" aria-label="Venn diagram transition note">
+				<h3>Venn Diagram Motion</h3>
+				<p>
+					Dialing in the entry directions for each circle was trickier than expected—the motion still nudges in a slightly
+					off-axis path, but the final overlap looks balanced and communicates the comparison clearly.
+				</p>
+			</div>
 			<div class="chart-frame doodle-frame">
 				<svg
 					id="doodle-chart"
 					role="img"
 					aria-label="Interactive DoodleBob sketch"
 				></svg>
+			</div>
+			<div class="note-tile" role="note" aria-label="Doodle interaction note">
+				<h3>Doodle Interaction Idea</h3>
+				<p>
+					I explored a color-in mechanic for the sketch, but without vector tooling on hand the bitmap couldn&rsquo;t accept
+					dynamic fills—so the playful flip animation became the primary interaction.
+				</p>
 			</div>
 			<div class="chart-frame">
 				<svg
@@ -314,16 +375,17 @@
 					aria-label="Monthly day and night temperatures in Sweden"
 				></svg>
 			</div>
+			<div class="note-tile" role="note" aria-label="Temperature chart decision">
+				<h3>Temperature Scale Choice</h3>
+				<p>
+					Switching the data to Fahrenheit kept the bars above zero and closer to the reference aesthetic. The hover card
+					now shares the Celsius conversion so both perspectives stay available.
+				</p>
+			</div>
 		</div>
 
 		<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 		<script>
-			/* 
-			My initial prompt was: 
-			'Make a histogram using HTML, CSS, D3.JS that will get posted online through github actions. sportsdata.csv has the data that must be used.'
-			This took a very long time to load and provided a complicated graph with too much data, hence I added a new prompt to edit the existing code and remove unneccessary details.):
-            'I just need a chart that includes all of the data sets (f1, nba, nfll, premierLeague) instead of a bar chart, do a line chart that becomes an area graph when you hover the cursor over the specific data set. Do not add extra text, just keep the graph and its axis and data set'
-			*/
 			(function () {
 				const svg = d3.select("#line-chart");
 				const width = 1300;
@@ -574,11 +636,6 @@
 					});
 			})();
             
-			/*
-			I spaced out the graphs more like this. also made the transition work better:
-			'the 2 graphs are too close to each other, causing the transition to activate too early. move the 2 graphs away from each other, and make the transition position dependent - i.e. start when the graph comes in to view and finish when it's fully in view.'
-			*/
-
 			(function () {
 				const columns = 5;
 				const rows = 12;
@@ -767,10 +824,6 @@
 
 				observer.observe(document.querySelector("#grid-chart"));
 			})();
-
-			/*
-			I struggled to orient the transition for the venn diagram correctly. It seems the LLM doesn't parse the directions correctly making the circles move in from the wrong sides, but it still looks ok.
-			*/
 
 				(function () {
 					const frame = document.querySelector(".venn-frame");
@@ -1147,11 +1200,6 @@
 						}
 					});
 				})();
-
-				/*
-				I initially wanted to have an interaction to color white areas on the sketch, but the LLM said:
-				'Vectorized, fillable SVG of doodlebob.png: Deferred – no vectorization tooling available in this environment.''
-				*/
 
 				(function () {
 					const frame = document.querySelector(".doodle-frame");
