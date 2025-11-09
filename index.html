@@ -10,8 +10,8 @@
 			body {
 				height: 100%;
 				margin: 0;
-				background: #050c1a;
-				color: #e2e8f0;
+				background: #ffffff;
+				color: #1f2937;
 				font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 			}
 
@@ -23,23 +23,23 @@
 			}
 
 			#chart {
-				width: min(1100px, 96vw);
+				width: min(1400px, 98vw);
 				height: min(680px, 88vh);
 				display: block;
 			}
 
 			.axis path,
 			.axis line {
-				stroke: rgba(148, 163, 184, 0.35);
+				stroke: rgba(148, 163, 184, 0.4);
 			}
 
 			.axis text {
-				fill: rgba(226, 232, 240, 0.82);
+				fill: #334155;
 				font-size: 0.85rem;
 			}
 
 			.axis-label {
-				fill: rgba(226, 232, 240, 0.72);
+				fill: #475569;
 				font-size: 0.9rem;
 				letter-spacing: 0.04em;
 			}
@@ -48,7 +48,7 @@
 				fill: none;
 				stroke-linejoin: round;
 				stroke-linecap: round;
-				stroke-width: 2.5;
+				stroke-width: 1.8;
 				stroke-opacity: 0.9;
 				transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
 			}
@@ -60,7 +60,7 @@
 			}
 
 			.legend text {
-				fill: rgba(226, 232, 240, 0.82);
+				fill: #1f2937;
 				font-size: 0.95rem;
 				cursor: pointer;
 				transition: fill 0.2s ease;
@@ -68,7 +68,7 @@
 
 			.legend text:hover,
 			.legend text:focus-visible {
-				fill: #f8fafc;
+				fill: #0f172a;
 			}
 
 			.legend-line {
@@ -95,9 +95,9 @@
 		<script>
 			(function () {
 				const svg = d3.select("#chart");
-				const width = 1100;
+				const width = 1300;
 				const height = 640;
-				const margin = { top: 64, right: 180, bottom: 80, left: 72 };
+				const margin = { top: 64, right: 220, bottom: 80, left: 72 };
 				const plotWidth = width - margin.left - margin.right;
 				const plotHeight = height - margin.top - margin.bottom;
 
@@ -118,7 +118,7 @@
 				const color = d3
 					.scaleOrdinal()
 					.domain(seriesDefinitions.map((d) => d.key))
-					.range(["#38bdf8", "#f97316", "#a855f7", "#22d3ee"]);
+					.range(["#1f77b4", "#d62728", "#2ca02c", "#ff7f0e"]);
 
 				const definedValue = (d) => Number.isFinite(d.value);
 
@@ -191,7 +191,7 @@
 					const hasKey = Boolean(key);
 					linePaths
 						.attr("stroke-opacity", (d) => (hasKey && d.key !== key ? 0.25 : 0.95))
-						.attr("stroke-width", (d) => (hasKey && d.key === key ? 3.5 : 2.5));
+						.attr("stroke-width", (d) => (hasKey && d.key === key ? 2.7 : 1.8));
 					areaPaths.style("fill-opacity", (d) => (hasKey && d.key === key ? 0.4 : 0));
 				}
 
