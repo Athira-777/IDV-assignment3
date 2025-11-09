@@ -2,6 +2,7 @@
 
 Interactive histogram visualizing global weekly search interest for several major sports leagues, built with HTML, CSS, and D3.js. The chart reads data directly from `sportsdata.csv` and can be deployed automatically to GitHub Pages via the included GitHub Actions workflow.
 
+
 ## Features
 
 - Responsive, glassmorphism-inspired layout with accessible color contrast.
