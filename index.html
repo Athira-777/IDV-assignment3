@@ -18,7 +18,7 @@
 			body {
 				display: flex;
 				justify-content: center;
-				padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+				padding: clamp(3rem, 7vw, 6rem) clamp(1.5rem, 4vw, 3rem);
 				background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 			}
 
@@ -27,7 +27,7 @@
 				display: flex;
 				flex-direction: column;
 				align-items: center;
-				gap: clamp(3rem, 6vw, 5rem);
+				gap: clamp(6rem, 10vw, 9rem);
 			}
 
 			.chart-frame {
@@ -584,12 +584,11 @@
 				const observer = new IntersectionObserver(
 					(entries) => {
 						entries.forEach((entry) => {
-							const { intersectionRect, boundingClientRect } = entry;
-							const visibleHeight = Math.max(0, intersectionRect.height || 0);
-							const totalHeight = boundingClientRect.height || 1;
-							const progress = Math.max(0, Math.min(1, visibleHeight / totalHeight));
-							playAnimation(progress);
-							if (progress >= 1) {
+							const startThreshold = 0.25;
+							const ratio = entry.intersectionRatio || 0;
+							const adjustedProgress = Math.max(0, Math.min(1, (ratio - startThreshold) / (1 - startThreshold)));
+							playAnimation(adjustedProgress);
+							if (adjustedProgress >= 1) {
 								observer.unobserve(entry.target);
 							}
 						});
@@ -597,7 +596,7 @@
 					{
 						root: null,
 						rootMargin: "0px",
-						threshold: Array.from({ length: 11 }, (_, i) => i / 10)
+						threshold: Array.from({ length: 21 }, (_, i) => i / 20)
 					}
 				);
 
