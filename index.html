@@ -53,7 +53,7 @@
 			}
 
 			#venn-chart {
-				height: min(420px, 60vh);
+				height: min(820px, 80vh);
 			}
 
 			#doodle-chart {
@@ -831,7 +831,7 @@
 					circlesByKey.chilliCrab.center = chilliCrabCenter;
 					circlesByKey.nasiLemak.center = nasiLemakCenter;
 
-					const margin = 36;
+					const margin = 36 * sizeScale;
 					let minX = Infinity;
 					let maxX = -Infinity;
 					let minY = Infinity;
@@ -959,17 +959,20 @@
 						{
 							keys: ["laksa", "nasiLemak"],
 							label: "Malay",
-							offsetY: 10
+							offsetY: 10,
+							offsetX: 0
 						},
 						{
 							keys: ["laksa", "chilliCrab"],
 							label: "Seafood",
-							offsetY: 10
+							offsetY: 10,
+							offsetX: -28
 						},
 						{
 							keys: ["nasiLemak", "chilliCrab"],
 							label: "Chilli",
-							offsetY: 10
+							offsetY: 10,
+							offsetX: 0
 						}
 					];
 
@@ -977,7 +980,7 @@
 						const [keyA, keyB] = intersection.keys;
 						const centerA = circlesByKey[keyA].center;
 						const centerB = circlesByKey[keyB].center;
-						intersection.x = (centerA.x + centerB.x) / 2;
+						intersection.x = (centerA.x + centerB.x) / 2 + (intersection.offsetX || 0);
 						intersection.y = (centerA.y + centerB.y) / 2 + intersection.offsetY;
 					});
 
