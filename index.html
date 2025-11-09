@@ -58,11 +58,30 @@
 
 			.doodle-frame {
 				will-change: transform, opacity;
+				perspective: 1200px;
+				transform-style: preserve-3d;
 			}
 
-			.fillable-region {
+			.doodle-frame svg {
 				cursor: pointer;
-				transition: fill 0.25s ease;
+				transform-origin: center;
+				backface-visibility: hidden;
+			}
+
+			.doodle-frame svg.flipping {
+				animation: doodle-flip 0.9s cubic-bezier(0.45, 0.05, 0.33, 1);
+			}
+
+			@keyframes doodle-flip {
+				0% {
+					transform: rotateY(0deg);
+				}
+				50% {
+					transform: rotateY(180deg);
+				}
+				100% {
+					transform: rotateY(360deg);
+				}
 			}
 
 			.axis path,
@@ -671,188 +690,48 @@
 
 					slideObserver.observe(frame);
 
-					svg.attr("viewBox", "0 0 360 360").attr("preserveAspectRatio", "xMidYMid meet");
-					const root = svg.append("g").attr("transform", "translate(20,20)");
+					svg
+						.attr("viewBox", "0 0 360 360")
+						.attr("preserveAspectRatio", "xMidYMid meet")
+						.attr("tabindex", 0)
+						.attr("focusable", true);
 
-					const strokeColor = "#0f172a";
-					const colors = ["#facc15", "#f97316"];
+					svg
+						.append("image")
+						.attr("href", "doodlebob.png")
+						.attr("xlink:href", "doodlebob.png")
+						.attr("x", 0)
+						.attr("y", 0)
+						.attr("width", 360)
+						.attr("height", 360)
+						.attr("preserveAspectRatio", "xMidYMid slice")
+						.append("title")
+						.text("DoodleBob sketch");
 
-					const body = root
-						.append("rect")
-						.attr("class", "fillable-region")
-						.attr("x", 60)
-						.attr("y", 20)
-						.attr("width", 220)
-						.attr("height", 250)
-						.attr("rx", 24)
-						.attr("ry", 24)
-						.attr("fill", "#ffffff")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 6)
-						.attr("vector-effect", "non-scaling-stroke");
+					const svgNode = svg.node();
+					if (!svgNode) return;
 
-					root
-						.append("path")
-						.attr("d", "M60,120 C20,90 20,60 40,50")
-						.attr("fill", "none")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 6)
-						.attr("stroke-linecap", "round")
-						.attr("vector-effect", "non-scaling-stroke");
-
-					root
-						.append("path")
-						.attr("d", "M280,120 C320,100 330,70 300,60")
-						.attr("fill", "none")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 6)
-						.attr("stroke-linecap", "round")
-						.attr("vector-effect", "non-scaling-stroke");
-
-					root
-						.append("path")
-						.attr("d", "M120,270 L110,320")
-						.attr("fill", "none")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 6)
-						.attr("stroke-linecap", "round")
-						.attr("vector-effect", "non-scaling-stroke");
-
-					root
-						.append("path")
-						.attr("d", "M220,270 L230,320")
-						.attr("fill", "none")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 6)
-						.attr("stroke-linecap", "round")
-						.attr("vector-effect", "non-scaling-stroke");
-
-					const leftEye = root
-						.append("rect")
-						.attr("class", "fillable-region")
-						.attr("x", 100)
-						.attr("y", 80)
-						.attr("width", 60)
-						.attr("height", 42)
-						.attr("rx", 10)
-						.attr("ry", 10)
-						.attr("fill", "#ffffff")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 5)
-						.attr("vector-effect", "non-scaling-stroke");
-
-					const rightEye = root
-						.append("rect")
-						.attr("class", "fillable-region")
-						.attr("x", 200)
-						.attr("y", 76)
-						.attr("width", 64)
-						.attr("height", 46)
-						.attr("rx", 12)
-						.attr("ry", 12)
-						.attr("fill", "#ffffff")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 5)
-						.attr("vector-effect", "non-scaling-stroke");
-
-					root
-						.append("circle")
-						.attr("cx", 130)
-						.attr("cy", 100)
-						.attr("r", 12)
-						.attr("fill", strokeColor);
-
-					root
-						.append("circle")
-						.attr("cx", 232)
-						.attr("cy", 98)
-						.attr("r", 12)
-						.attr("fill", strokeColor);
-
-					root
-						.append("path")
-						.attr("d", "M170,140 L166,150 L178,150 Z")
-						.attr("fill", strokeColor);
-
-					const mouth = root
-						.append("rect")
-						.attr("class", "fillable-region")
-						.attr("x", 120)
-						.attr("y", 172)
-						.attr("width", 130)
-						.attr("height", 60)
-						.attr("rx", 14)
-						.attr("ry", 14)
-						.attr("fill", "#ffffff")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 5)
-						.attr("vector-effect", "non-scaling-stroke");
-
-					root
-						.append("path")
-						.attr("d", "M132,202 H 238")
-						.attr("fill", "none")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 5)
-						.attr("vector-effect", "non-scaling-stroke");
-
-					root
-						.append("path")
-						.attr("d", "M170,172 V 232")
-						.attr("fill", "none")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 5)
-						.attr("vector-effect", "non-scaling-stroke");
-
-					root
-						.append("path")
-						.attr("d", "M210,172 V 232")
-						.attr("fill", "none")
-						.attr("stroke", strokeColor)
-						.attr("stroke-width", 5)
-						.attr("vector-effect", "non-scaling-stroke");
-
-					const teeth = [
-						{ x: 140, y: 188 },
-						{ x: 192, y: 188 }
-					];
-
-					teeth.forEach((pos) => {
-						root
-							.append("rect")
-							.attr("class", "fillable-region")
-							.attr("x", pos.x)
-							.attr("y", pos.y)
-							.attr("width", 28)
-							.attr("height", 20)
-							.attr("rx", 6)
-							.attr("ry", 6)
-							.attr("fill", "#ffffff")
-							.attr("stroke", strokeColor)
-							.attr("stroke-width", 4)
-							.attr("vector-effect", "non-scaling-stroke");
-					});
-
-					const fillableSelection = root.selectAll(".fillable-region");
-
-					function paint(selection) {
-						const color = colors[Math.floor(Math.random() * colors.length)];
-						selection.attr("fill", color);
+					function triggerFlip() {
+						if (svgNode.classList.contains("flipping")) return;
+						svgNode.classList.add("flipping");
 					}
 
-					fillableSelection
-						.attr("tabindex", 0)
-						.on("click", function (event) {
-							paint(d3.select(this));
-						})
-						.on("keydown", function (event) {
-							if (event.key === "Enter" || event.key === " ") {
-								event.preventDefault();
-								paint(d3.select(this));
-							}
-						});
+					svg.on("click", () => {
+						triggerFlip();
+					});
 
-					fillableSelection.append("title").text("Click to recolor");
+					svg.on("keydown", (event) => {
+						if (event.key === "Enter" || event.key === " ") {
+							event.preventDefault();
+							triggerFlip();
+						}
+					});
+
+					svgNode.addEventListener("animationend", () => {
+						svgNode.classList.remove("flipping");
+					});
+
+					svg.append("title").text("Activate to flip the doodle");
 				})();
 		</script>
 	</body>
