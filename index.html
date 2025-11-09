@@ -209,17 +209,17 @@
 
 				svg.attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet");
 
-				const root = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-				const defs = svg.append("defs");
-				const clipPathId = "line-chart-clip";
-				const clipRect = defs
-					.append("clipPath")
-					.attr("id", clipPathId)
-					.append("rect")
-					.attr("x", 0)
-					.attr("y", plotHeight)
-					.attr("width", plotWidth)
-					.attr("height", 0);
+                const root = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+                const defs = svg.append("defs");
+                const clipPathId = "line-chart-clip";
+                const clipRect = defs
+                    .append("clipPath")
+                    .attr("id", clipPathId)
+                    .append("rect")
+                    .attr("x", 0)
+                    .attr("y", 0)
+                    .attr("width", 0)
+                    .attr("height", plotHeight);
 
 				const xScale = d3.scaleTime().range([0, plotWidth]);
 				const yScale = d3.scaleLinear().range([plotHeight, 0]);
