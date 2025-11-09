@@ -879,6 +879,31 @@
 						nasiLemakCenter.y += shiftY;
 					}
 
+					const balancedBounds = computeBounds();
+					const topGap = balancedBounds.minY;
+					const bottomGap = height - balancedBounds.maxY;
+					let balanceShift = (bottomGap - topGap) / 2;
+
+					if (balanceShift !== 0) {
+						const maxDown = bottomGap - margin;
+						const maxUp = topGap - margin;
+						if (balanceShift > 0) {
+							balanceShift = Math.min(balanceShift, maxDown);
+						} else {
+							balanceShift = Math.max(balanceShift, -maxUp);
+						}
+
+						if (Math.abs(balanceShift) > 0.1) {
+							items.forEach((item) => {
+								const center = circlesByKey[item.key].center;
+								center.y += balanceShift;
+							});
+							laksaCenter.y += balanceShift;
+							chilliCrabCenter.y += balanceShift;
+							nasiLemakCenter.y += balanceShift;
+						}
+					}
+
 					const defs = svg.append("defs");
 					const root = svg.append("g");
 
