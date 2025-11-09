@@ -17,15 +17,38 @@
 
 			body {
 				display: flex;
-				align-items: center;
 				justify-content: center;
-				padding: clamp(1rem, 3vw, 2rem);
+				padding: clamp(1.5rem, 4vw, 3rem);
 			}
 
-			#chart {
+			.page {
 				width: min(1400px, 98vw);
-				height: min(680px, 88vh);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: clamp(1.5rem, 4vw, 3rem);
+			}
+
+			.chart-frame {
+				width: 100%;
+				background: #f9fafb;
+				border: 1px solid #e2e8f0;
+				box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+				padding: clamp(1rem, 3vw, 1.5rem);
+				border-radius: 18px;
+			}
+
+			.chart-frame svg {
+				width: 100%;
 				display: block;
+			}
+
+			#line-chart {
+				height: min(680px, 80vh);
+			}
+
+			#grid-chart {
+				height: min(420px, 60vh);
 			}
 
 			.axis path,
@@ -86,22 +109,70 @@
 				stroke-width: 24;
 				cursor: pointer;
 			}
+
+			.grid-line {
+				stroke: rgba(148, 163, 184, 0.35);
+				stroke-width: 1;
+			}
+
+			.connection-line {
+				stroke: #111827;
+				stroke-width: 2;
+				stroke-linecap: round;
+			}
+
+			.connection-line.active {
+				stroke-width: 3.5;
+			}
+
+			.arrow-line {
+				fill: none;
+				stroke-width: 2.5;
+				stroke-dasharray: 8 6;
+			}
+
+			.grid-node {
+				fill: #2563eb;
+				stroke: #0f172a;
+				stroke-width: 2;
+				transition: transform 0.2s ease, fill 0.2s ease;
+				cursor: pointer;
+			}
+
+			.grid-node.active {
+				fill: #1d4ed8;
+				transform: scale(1.1);
+			}
+
+			.grid-label {
+				fill: #1f2937;
+				font-weight: 600;
+				font-size: 0.9rem;
+			}
+
+			.grid-label.active {
+				fill: #1d4ed8;
+			}
 		</style>
 	</head>
 	<body>
-        <!-- 
-        My initial prompt was: 
-        Make a histogram using HTML, CSS, D3.JS that will get posted online through github actions. sportsdata.csv has the data that must be used.
-
-        This took a very long time to load and provided a complicated graph with too much data, hence I added a new prompt to edit the existing code and remove unneccessary details.) I just need a chart that includes all of the data sets (f1, nba, nfll, premierLeague) instead of a bar chart, do a line chart that becomes an area graph when you hover the cursor over the specific data set. Do not add extra text, just keep the graph and its axis and data set
-        -->
-
-		<svg id="chart" role="img" aria-label="Weekly search interest by league"></svg>
+		<div class="page">
+			<div class="chart-frame">
+				<svg id="line-chart" role="img" aria-label="Weekly search interest by league"></svg>
+			</div>
+			<div class="chart-frame">
+				<svg
+					id="grid-chart"
+					role="img"
+					aria-label="Grid network view of energy states"
+				></svg>
+			</div>
+		</div>
 
 		<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 		<script>
 			(function () {
-				const svg = d3.select("#chart");
+				const svg = d3.select("#line-chart");
 				const width = 1300;
 				const height = 640;
 				const margin = { top: 64, right: 220, bottom: 80, left: 72 };
@@ -329,6 +400,175 @@
 					.catch((error) => {
 						console.error(error);
 					});
+			})();
+
+			(function () {
+				const columns = 5;
+				const rows = 12;
+				const width = 1220;
+				const height = 400;
+				const margin = { top: 36, right: 200, bottom: 42, left: 80 };
+				const plotWidth = width - margin.left - margin.right;
+				const plotHeight = height - margin.top - margin.bottom;
+
+				const svg = d3
+					.select("#grid-chart")
+					.attr("viewBox", `0 0 ${width} ${height}`)
+					.attr("preserveAspectRatio", "xMidYMid meet");
+
+				const root = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+				const cellWidth = plotWidth / (columns - 1);
+				const cellHeight = plotHeight / (rows - 1);
+
+				const nodes = [
+					{ id: "ea2", label: "eᵃ₂", col: 2, row: 3 },
+					{ id: "ea1", label: "eᵃ₁", col: 2, row: 8 },
+					{ id: "eb2", label: "eᵇ₂", col: 4, row: 4 },
+					{ id: "eb1", label: "eᵇ₁", col: 4, row: 6 }
+				].map((node) => ({
+					...node,
+					x: (node.col - 1) * cellWidth,
+					y: (node.row - 1) * cellHeight
+				}));
+
+				const connections = [
+					{ source: "ea2", target: "ea1" },
+					{ source: "ea2", target: "eb2" },
+					{ source: "eb1", target: "ea1" },
+					{ source: "eb1", target: "eb2" }
+				];
+
+				const arrows = [
+					{ source: "ea2", target: "eb1", color: "#60a5fa" },
+					{ source: "ea1", target: "eb2", color: "#1e3a8a" }
+				];
+
+				const markers = svg.append("defs");
+
+				arrows.forEach((arrow, index) => {
+					markers
+						.append("marker")
+						.attr("id", `arrow-head-${index}`)
+						.attr("viewBox", "0 -4 8 8")
+						.attr("refX", 8)
+						.attr("refY", 0)
+						.attr("markerWidth", 8)
+						.attr("markerHeight", 8)
+						.attr("orient", "auto")
+						.append("path")
+						.attr("d", "M0,-4L8,0L0,4")
+						.attr("fill", arrow.color);
+				});
+
+				root
+					.selectAll("line.grid-line.horizontal")
+					.data(d3.range(rows))
+					.join("line")
+					.attr("class", "grid-line horizontal")
+					.attr("x1", 0)
+					.attr("x2", plotWidth)
+					.attr("y1", (d) => d * cellHeight)
+					.attr("y2", (d) => d * cellHeight);
+
+				root
+					.selectAll("line.grid-line.vertical")
+					.data(d3.range(columns))
+					.join("line")
+					.attr("class", "grid-line vertical")
+					.attr("x1", (d) => d * cellWidth)
+					.attr("x2", (d) => d * cellWidth)
+					.attr("y1", 0)
+					.attr("y2", plotHeight);
+
+				const connectionGroup = root.append("g");
+				const arrowGroup = root.append("g");
+				const nodeGroup = root.append("g");
+				const labelGroup = root.append("g");
+
+				function nodeById(id) {
+					return nodes.find((node) => node.id === id);
+				}
+
+				connectionGroup
+					.selectAll("line.connection-line")
+					.data(connections)
+					.join("line")
+					.attr("class", "connection-line")
+					.attr("x1", (d) => nodeById(d.source).x)
+					.attr("y1", (d) => nodeById(d.source).y)
+					.attr("x2", (d) => nodeById(d.target).x)
+					.attr("y2", (d) => nodeById(d.target).y);
+
+				arrowGroup
+					.selectAll("line.arrow-line")
+					.data(arrows.map((arrow, index) => ({ ...arrow, markerId: `arrow-head-${index}` })))
+					.join("line")
+					.attr("class", "arrow-line")
+					.attr("stroke", (d) => d.color)
+					.attr("marker-end", (d) => `url(#${d.markerId})`)
+					.attr("x1", (d) => nodeById(d.source).x)
+					.attr("y1", (d) => nodeById(d.source).y)
+					.attr("x2", (d) => nodeById(d.target).x)
+					.attr("y2", (d) => nodeById(d.target).y);
+
+				nodeGroup
+					.selectAll("circle.grid-node")
+					.data(nodes)
+					.join("circle")
+					.attr("class", "grid-node")
+					.attr("r", 9)
+					.attr("cx", plotWidth / 2)
+					.attr("cy", -40)
+					.each(function (d) {
+						d.finalX = d.x;
+						d.finalY = d.y;
+					})
+					.transition()
+					.duration(1200)
+					.delay((_, i) => i * 120)
+					.ease(d3.easeCubicOut)
+					.attr("cx", (d) => d.finalX)
+					.attr("cy", (d) => d.finalY);
+
+				labelGroup
+					.selectAll("text.grid-label")
+					.data(nodes)
+					.join("text")
+					.attr("class", "grid-label")
+					.attr("x", (d) => d.x + 14)
+					.attr("y", (d) => d.y - 12)
+					.text((d) => d.label)
+					.style("opacity", 0)
+					.transition()
+					.duration(600)
+					.delay(600)
+					.style("opacity", 1);
+
+				const enhancedNodes = nodeGroup.selectAll("circle.grid-node");
+
+				function setActive(id) {
+					enhancedNodes.classed("active", (d) => d.id === id);
+					labelGroup.selectAll("text.grid-label").classed("active", (d) => d.id === id);
+					connectionGroup
+						.selectAll("line.connection-line")
+						.classed("active", (d) => d.source === id || d.target === id);
+				}
+
+				function resetActive() {
+					enhancedNodes.classed("active", false);
+					labelGroup.selectAll("text.grid-label").classed("active", false);
+					connectionGroup.selectAll("line.connection-line").classed("active", false);
+				}
+
+				enhancedNodes
+					.on("mouseenter", (_, d) => setActive(d.id))
+					.on("mouseleave", resetActive)
+					.on("focus", (_, d) => setActive(d.id))
+					.on("blur", resetActive)
+					.attr("tabindex", 0)
+					.append("title")
+					.text((d) => d.label);
 			})();
 		</script>
 	</body>
