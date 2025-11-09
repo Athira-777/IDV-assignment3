@@ -53,9 +53,8 @@
 			}
 
 			#venn-chart {
-				height: min(820px, 80vh);
-				transform: translateY(20%);
-				will-change: transform;
+				height: auto;
+				max-height: 100%;
 			}
 
 			#doodle-chart {
@@ -70,7 +69,7 @@
 
 			.venn-frame {
 				will-change: transform, opacity;
-				min-height: 100vh;
+				min-height: 90vh;
 				display: flex;
 				align-items: center;
 				justify-content: center;
