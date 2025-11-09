@@ -4,269 +4,178 @@
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Sports Interest Histogram</title>
+		<title>Sports Search Trends</title>
 		<style>
-			:root {
-				color-scheme: light dark;
-				--bg: #0f172a;
-				--fg: #e2e8f0;
-				--card-bg: rgba(15, 23, 42, 0.6);
-				--card-border: rgba(148, 163, 184, 0.25);
-				--accent: #38bdf8;
-				--accent-muted: rgba(56, 189, 248, 0.25);
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+				background: #050c1a;
+				color: #e2e8f0;
 				font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 			}
 
-			* {
-				box-sizing: border-box;
-			}
-
 			body {
-				margin: 0;
-				min-height: 100vh;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: radial-gradient(circle at top, #1e293b, #020617 70%);
-				color: var(--fg);
+				padding: clamp(1rem, 3vw, 2rem);
 			}
 
-			main {
-				width: min(1100px, 94vw);
-				padding: clamp(1.5rem, 3vw, 2.5rem);
-				background: var(--card-bg);
-				border: 1px solid var(--card-border);
-				border-radius: 24px;
-				backdrop-filter: blur(12px);
-				box-shadow: 0 20px 45px -20px rgba(15, 23, 42, 0.7);
-			}
-
-			header h1 {
-				margin: 0;
-				font-size: clamp(2.2rem, 5vw, 3rem);
-				letter-spacing: -0.02em;
-			}
-
-			header p {
-				margin: 0.75rem 0 0;
-				font-size: clamp(1rem, 2.2vw, 1.15rem);
-				color: rgba(226, 232, 240, 0.8);
-				max-width: 60ch;
-			}
-
-			.controls {
-				margin-top: 1.75rem;
-				display: flex;
-				flex-wrap: wrap;
-				gap: 1rem clamp(1rem, 2vw, 2rem);
-				align-items: center;
-			}
-
-			.controls label {
-				font-weight: 600;
-				color: rgba(226, 232, 240, 0.9);
-			}
-
-			.controls select {
-				padding: 0.65rem 1rem;
-				border-radius: 999px;
-				border: 1px solid var(--accent-muted);
-				background: rgba(15, 23, 42, 0.5);
-				color: var(--fg);
-				font-size: 1rem;
-				outline: none;
-				transition: border-color 0.2s ease, box-shadow 0.2s ease;
-			}
-
-			.controls select:focus-visible {
-				border-color: var(--accent);
-				box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-			}
-
-			.chart-wrapper {
-				margin-top: clamp(2rem, 4vw, 3rem);
-				position: relative;
-				width: 100%;
-			}
-
-			.chart-wrapper svg {
-				width: 100%;
-				height: auto;
+			#chart {
+				width: min(1100px, 96vw);
+				height: min(680px, 88vh);
 				display: block;
-				overflow: visible;
-			}
-
-			.bar {
-				fill: var(--accent-muted);
-				stroke: var(--accent);
-				stroke-width: 1;
-				transition: fill 0.2s ease, transform 0.2s ease;
-			}
-
-			.bar:hover {
-				fill: var(--accent);
-				transform: translateY(-4px);
 			}
 
 			.axis path,
 			.axis line {
-				stroke: rgba(148, 163, 184, 0.3);
+				stroke: rgba(148, 163, 184, 0.35);
 			}
 
 			.axis text {
-				fill: rgba(226, 232, 240, 0.7);
+				fill: rgba(226, 232, 240, 0.82);
 				font-size: 0.85rem;
 			}
 
-			.chart-title {
-				font-size: 1.25rem;
-				font-weight: 600;
-				margin-bottom: 0.5rem;
-			}
-
-			.chart-description {
-				margin: 0;
-				color: rgba(226, 232, 240, 0.7);
-				font-size: 0.95rem;
-			}
-
-			.stats {
-				margin-top: 1.5rem;
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-				gap: 1rem;
-			}
-
-			.stat-card {
-				padding: 1rem;
-				border-radius: 16px;
-				background: rgba(15, 23, 42, 0.45);
-				border: 1px solid rgba(148, 163, 184, 0.2);
-			}
-
-			.stat-card span {
-				display: block;
-			}
-
-			.stat-label {
-				font-size: 0.85rem;
-				color: rgba(148, 163, 184, 0.85);
-				margin-bottom: 0.3rem;
-				text-transform: uppercase;
-				letter-spacing: 0.06em;
-			}
-
-			.stat-value {
-				font-size: 1.4rem;
-				font-weight: 700;
-			}
-
-			.tooltip {
-				position: absolute;
-				pointer-events: none;
-				padding: 0.6rem 0.85rem;
-				border-radius: 12px;
-				background: rgba(15, 23, 42, 0.9);
-				border: 1px solid rgba(148, 163, 184, 0.4);
-				color: var(--fg);
-				font-size: 0.85rem;
-				line-height: 1.4;
-				transform: translate(-50%, -120%);
-				opacity: 0;
-				transition: opacity 0.15s ease;
-			}
-
-			.tooltip.visible {
-				opacity: 1;
-			}
-
-			.notes {
-				margin-top: clamp(2rem, 3vw, 2.5rem);
+			.axis-label {
+				fill: rgba(226, 232, 240, 0.72);
 				font-size: 0.9rem;
-				color: rgba(148, 163, 184, 0.9);
-				max-width: 70ch;
+				letter-spacing: 0.04em;
 			}
 
-			@media (max-width: 640px) {
-				main {
-					padding: 1.5rem;
-					border-radius: 18px;
-				}
+			.line {
+				fill: none;
+				stroke-linejoin: round;
+				stroke-linecap: round;
+				stroke-width: 2.5;
+				stroke-opacity: 0.9;
+				transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+			}
 
-				header p {
-					font-size: 0.95rem;
-				}
+			.area {
+				stroke: none;
+				fill-opacity: 0;
+				transition: fill-opacity 0.2s ease;
+			}
+
+			.legend text {
+				fill: rgba(226, 232, 240, 0.82);
+				font-size: 0.95rem;
+				cursor: pointer;
+				transition: fill 0.2s ease;
+			}
+
+			.legend text:hover,
+			.legend text:focus-visible {
+				fill: #f8fafc;
+			}
+
+			.legend-line {
+				stroke-width: 3;
+				stroke-linecap: round;
+			}
+
+			.legend-item {
+				outline: none;
+			}
+
+			.hover-target {
+				fill: none;
+				stroke: transparent;
+				stroke-width: 24;
+				cursor: pointer;
 			}
 		</style>
 	</head>
 	<body>
-		<main>
-			<header>
-				<h1>How the World Follows Sports</h1>
-				<p>
-					Explore the weekly search interest for global sports leagues. Choose a
-					league to see how attention is distributed across nearly five years of
-					data sourced from <strong>sportsdata.csv</strong>.
-				</p>
-			</header>
-
-			<section class="controls" aria-label="Histogram controls">
-				<label for="series-select">Choose a league</label>
-				<select id="series-select"></select>
-			</section>
-
-			<section class="chart-wrapper" aria-labelledby="chart-title">
-				<div class="chart-title" id="chart-title"></div>
-				<p class="chart-description"></p>
-				<div id="chart" role="img" aria-hidden="false"></div>
-				<div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
-			</section>
-
-			<section class="stats" aria-live="polite"></section>
-
-			<section class="notes">
-				<p>
-					Notes: The chart groups weekly search interest scores into evenly sized
-					buckets (bins) to highlight how frequently different levels of attention
-					occur. Try resizing the window or switching leagues to compare patterns.
-				</p>
-			</section>
-		</main>
+		<svg id="chart" role="img" aria-label="Weekly search interest by league"></svg>
 
 		<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 		<script>
 			(function () {
-				const chart = d3.select("#chart");
-				const tooltip = d3.select("#tooltip");
-				const selectEl = d3.select("#series-select");
-				const statsContainer = d3.select(".stats");
-				const titleEl = d3.select("#chart-title");
-				const descriptionEl = d3.select(".chart-description");
+				const svg = d3.select("#chart");
+				const width = 1100;
+				const height = 640;
+				const margin = { top: 64, right: 180, bottom: 80, left: 72 };
+				const plotWidth = width - margin.left - margin.right;
+				const plotHeight = height - margin.top - margin.bottom;
 
-				const seriesMeta = [
-					{ key: "f1", label: "Formula 1", description: "How global Formula 1 interest fluctuates across seasons and major races." },
-					{ key: "nba", label: "NBA", description: "Interest around the NBA season, playoffs, and off-season storylines." },
-					{ key: "nfl", label: "NFL", description: "Weekly search attention for American football, peaking around playoffs and Super Bowl." },
-					{ key: "premierLeague", label: "Premier League", description: "Premier League matchdays and transfer windows drive global attention." }
+				const parseDate = d3.timeParse("%Y-%m-%d");
+
+				const seriesDefinitions = [
+					{ key: "f1", label: "F1", column: "f1: (Worldwide)" },
+					{ key: "nba", label: "NBA", column: "nba: (Worldwide)" },
+					{ key: "nfl", label: "NFL", column: "nfl: (Worldwide)" },
+					{ key: "premierLeague", label: "Premier League", column: "Premier League: (Worldwide)" }
 				];
 
-				const parseTime = d3.timeParse("%Y-%m-%d");
-				const numberFormat = d3.format(",.0f");
-				const percentFormat = d3.format(".0%");
-
-				const config = {
-					height: 460,
-					margin: { top: 24, right: 24, bottom: 60, left: 60 },
-					minBins: 12,
-					maxBins: 30
+				const parseValue = (value) => {
+					const numeric = Number(value);
+					return Number.isFinite(numeric) ? numeric : NaN;
 				};
 
-				const seriesKeyMap = {
-					f1: "f1: (Worldwide)",
-					nba: "nba: (Worldwide)",
-					nfl: "nfl: (Worldwide)",
-					premierLeague: "Premier League: (Worldwide)"
-				};
+				const color = d3
+					.scaleOrdinal()
+					.domain(seriesDefinitions.map((d) => d.key))
+					.range(["#38bdf8", "#f97316", "#a855f7", "#22d3ee"]);
+
+				const definedValue = (d) => Number.isFinite(d.value);
+
+				svg.attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet");
+
+				const root = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+				const xScale = d3.scaleTime().range([0, plotWidth]);
+				const yScale = d3.scaleLinear().range([plotHeight, 0]);
+
+				const lineBuilder = d3
+					.line()
+					.defined(definedValue)
+					.x((d) => xScale(d.date))
+					.y((d) => yScale(d.value));
+
+				const areaBuilder = d3
+					.area()
+					.defined(definedValue)
+					.x((d) => xScale(d.date))
+					.y0(plotHeight)
+					.y1((d) => yScale(d.value));
+
+				const areasLayer = root.append("g");
+				const linesLayer = root.append("g");
+				const hitLayer = root.append("g");
+
+				const xAxisGroup = root
+					.append("g")
+					.attr("class", "axis axis--x")
+					.attr("transform", `translate(0,${plotHeight})`);
+
+				const yAxisGroup = root.append("g").attr("class", "axis axis--y");
+
+				root
+					.append("text")
+					.attr("class", "axis-label")
+					.attr("x", plotWidth / 2)
+					.attr("y", plotHeight + margin.bottom - 28)
+					.attr("text-anchor", "middle")
+					.text("Week");
+
+				root
+					.append("text")
+					.attr("class", "axis-label")
+					.attr("x", -margin.left + 18)
+					.attr("y", -28)
+					.attr("text-anchor", "start")
+					.text("Search interest");
+
+				const legend = svg
+					.append("g")
+					.attr("class", "legend")
+					.attr("transform", `translate(${width - margin.right + 30},${margin.top})`);
+
+				let areaPaths;
+				let linePaths;
 
 				function cleanCsvLines(rawText) {
 					const lines = rawText.split(/\r?\n/).filter((line) => line.trim().length > 0);
@@ -277,215 +186,141 @@
 					return lines.slice(headerIndex).join("\n");
 				}
 
-				function computeBins(values, width) {
-					const domain = d3.extent(values);
-					const valueRange = domain[1] - domain[0];
-					const approxBinWidth = Math.max(valueRange / 15, 1);
-					const thresholds = Math.min(
-						Math.max(Math.round(width / 60), config.minBins),
-						config.maxBins
-					);
-					return d3
-						.bin()
-						.value((d) => d)
-						.domain([Math.max(0, domain[0] - approxBinWidth), domain[1] + approxBinWidth])
-						.thresholds(thresholds)(values);
+				function setActiveSeries(key) {
+					if (!linePaths || !areaPaths) return;
+					const hasKey = Boolean(key);
+					linePaths
+						.attr("stroke-opacity", (d) => (hasKey && d.key !== key ? 0.25 : 0.95))
+						.attr("stroke-width", (d) => (hasKey && d.key === key ? 3.5 : 2.5));
+					areaPaths.style("fill-opacity", (d) => (hasKey && d.key === key ? 0.4 : 0));
 				}
 
-				function updateStats(values) {
-					if (!values.length) {
-						statsContainer.html("<p>No data available.</p>");
-						return;
+				function resetActiveSeries() {
+					setActiveSeries(null);
+				}
+
+				function handleLegendKeyboard(event, key) {
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						setActiveSeries(key);
+					} else if (event.key === "Escape") {
+						resetActiveSeries();
 					}
-
-					const sorted = values.slice().sort(d3.ascending);
-					const total = values.length;
-					const sum = d3.sum(sorted);
-					const mean = sum / total;
-					const median = d3.quantileSorted(sorted, 0.5);
-					const q1 = d3.quantileSorted(sorted, 0.25);
-					const q3 = d3.quantileSorted(sorted, 0.75);
-					const percentile90 = d3.quantileSorted(sorted, 0.9);
-
-					statsContainer.html("");
-					const stats = [
-						{ label: "Weeks analysed", value: numberFormat(total) },
-						{ label: "Average score", value: numberFormat(mean) },
-						{ label: "Median score", value: numberFormat(median) },
-						{ label: "Interquartile range", value: `${numberFormat(q1)} – ${numberFormat(q3)}` },
-						{ label: "90th percentile", value: numberFormat(percentile90) }
-					];
-
-					stats.forEach((stat) => {
-						const card = statsContainer.append("article").attr("class", "stat-card");
-						card.append("span").attr("class", "stat-label").text(stat.label);
-						card.append("span").attr("class", "stat-value").text(stat.value);
-					});
-				}
-
-						function renderHistogram(dataset, meta) {
-					const containerNode = chart.node();
-							const width = Math.max(containerNode.clientWidth || 0, 600);
-					const height = config.height;
-					const { margin } = config;
-
-								chart.selectAll("*").remove();
-
-							if (!dataset.values.length) {
-								chart
-									.append("p")
-										.attr("class", "no-data-message")
-									.style("color", "#fca5a5")
-									.style("font-weight", "600")
-									.text("No data available for the selected league.");
-								return;
-							}
-
-					const svg = chart
-						.append("svg")
-						.attr("viewBox", `0 0 ${width} ${height}`)
-						.attr("role", "img")
-						.attr("aria-labelledby", "chart-title")
-						.attr("tabindex", 0);
-
-					const plotWidth = width - margin.left - margin.right;
-					const plotHeight = height - margin.top - margin.bottom;
-
-					const g = svg
-						.append("g")
-						.attr("transform", `translate(${margin.left},${margin.top})`);
-
-					const bins = computeBins(dataset.values, plotWidth);
-
-					const x = d3
-						.scaleLinear()
-						.domain([bins[0].x0, bins[bins.length - 1].x1])
-						.nice()
-						.range([0, plotWidth]);
-
-					const y = d3
-						.scaleLinear()
-						.domain([0, d3.max(bins, (d) => d.length)])
-						.nice()
-						.range([plotHeight, 0]);
-
-					g.append("g")
-						.attr("class", "axis axis--x")
-						.attr("transform", `translate(0,${plotHeight})`)
-						.call(d3.axisBottom(x).ticks(10).tickSizeOuter(0));
-
-					g.append("g")
-						.attr("class", "axis axis--y")
-						.call(d3.axisLeft(y).ticks(6).tickSizeOuter(0));
-
-					const bars = g
-						.selectAll("rect.bar")
-						.data(bins)
-						.join("rect")
-						.attr("class", "bar")
-									.attr("tabindex", 0)
-						.attr("x", (d) => x(d.x0) + 1)
-						.attr("y", (d) => y(d.length))
-						.attr("width", (d) => Math.max(0, x(d.x1) - x(d.x0) - 2))
-						.attr("height", (d) => Math.max(0, plotHeight - y(d.length)))
-						.on("mouseenter focus", function (event, d) {
-							const midpoint = (x(d.x0) + x(d.x1)) / 2 + margin.left;
-							const countsFraction = d.length / dataset.values.length;
-							tooltip
-								.classed("visible", true)
-								.style("left", `${midpoint}px`)
-								.style("top", `${y(d.length) + margin.top}px`)
-								.html(
-									`<strong>${d.length} week${d.length === 1 ? "" : "s"}</strong><br />` +
-										`${numberFormat(d.x0)} – ${numberFormat(d.x1)} interest score<br />` +
-										`${percentFormat(countsFraction)} of observations`
-								);
-						})
-						.on("mousemove", function (event) {
-							const [xCoord, yCoord] = d3.pointer(event, svg.node());
-							tooltip.style("left", `${xCoord}px`).style("top", `${yCoord}px`);
-						})
-						.on("mouseleave blur", () => tooltip.classed("visible", false));
-
-					g.append("text")
-						.attr("x", plotWidth / 2)
-						.attr("y", plotHeight + margin.bottom - 12)
-						.attr("text-anchor", "middle")
-						.attr("fill", "rgba(226, 232, 240, 0.75)")
-						.attr("font-size", "0.9rem")
-						.text("Weekly search interest score");
-
-					g.append("text")
-						.attr("x", -margin.left + 10)
-						.attr("y", -12)
-						.attr("text-anchor", "start")
-						.attr("fill", "rgba(226, 232, 240, 0.75)")
-						.attr("font-size", "0.9rem")
-						.text("Number of weeks");
-
-					bars.append("title").text(
-						(d) =>
-							`${numberFormat(d.length)} week${d.length === 1 ? "" : "s"} between ${numberFormat(
-								d.x0
-							)} and ${numberFormat(d.x1)} interest score`
-					);
-				}
-
-				function updateChart(datasetKey) {
-					const meta = seriesMeta.find((s) => s.key === datasetKey) || seriesMeta[0];
-					const column = seriesKeyMap[meta.key];
-
-					const values = data
-						.map((row) => row[column])
-						.filter((value) => Number.isFinite(value));
-
-					titleEl.text(`${meta.label} Weekly Interest Distribution`);
-					descriptionEl.text(meta.description);
-
-					updateStats(values);
-					renderHistogram({ values }, meta);
-				}
-
-				let data = [];
-
-				function initControls() {
-					selectEl
-						.selectAll("option")
-						.data(seriesMeta)
-						.join("option")
-						.attr("value", (d) => d.key)
-						.text((d) => d.label);
-
-					selectEl.on("change", (event) => {
-						const key = event.target.value;
-						updateChart(key);
-					});
-
-					const defaultKey = seriesMeta[2].key; // NFL tends to have wide spread
-					selectEl.property("value", defaultKey);
-					updateChart(defaultKey);
-
-					window.addEventListener("resize", () => updateChart(selectEl.property("value")));
 				}
 
 				d3.text("sportsdata.csv")
 					.then((rawText) => {
 						const cleanCsv = cleanCsvLines(rawText);
-						data = d3.csvParse(cleanCsv, (row) => ({
-							Week: parseTime(row.Week.trim()),
-							"f1: (Worldwide)": +row["f1: (Worldwide)"] || 0,
-							"nba: (Worldwide)": +row["nba: (Worldwide)"] || 0,
-							"nfl: (Worldwide)": +row["nfl: (Worldwide)"] || 0,
-							"Premier League: (Worldwide)": +row["Premier League: (Worldwide)"] || 0
+						const parsedRows = d3
+							.csvParse(cleanCsv, (row) => ({
+								Week: parseDate(row.Week.trim()),
+								"f1: (Worldwide)": parseValue(row["f1: (Worldwide)"]),
+								"nba: (Worldwide)": parseValue(row["nba: (Worldwide)"]),
+								"nfl: (Worldwide)": parseValue(row["nfl: (Worldwide)"]),
+								"Premier League: (Worldwide)": parseValue(row["Premier League: (Worldwide)"])
+							}))
+							.filter((row) => row.Week instanceof Date && !Number.isNaN(row.Week.getTime()));
+
+						if (!parsedRows.length) {
+							return;
+						}
+
+						const seriesData = seriesDefinitions.map((definition) => ({
+							...definition,
+							values: parsedRows.map((row) => ({
+								date: row.Week,
+								value: Number.isFinite(row[definition.column]) ? row[definition.column] : NaN
+							}))
 						}));
 
-						initControls();
+						const xDomain = d3.extent(parsedRows, (d) => d.Week);
+						xScale.domain(xDomain);
+
+						const allValues = seriesData
+							.flatMap((series) => series.values.map((d) => d.value))
+							.filter((value) => Number.isFinite(value));
+						const yMax = d3.max(allValues) || 1;
+						yScale.domain([0, yMax]).nice();
+
+						const xAxis = d3
+							.axisBottom(xScale)
+							.ticks(Math.min(12, Math.ceil(parsedRows.length / 8)))
+							.tickSizeOuter(0);
+						const yAxis = d3.axisLeft(yScale).ticks(6).tickSizeOuter(0);
+
+						xAxisGroup.call(xAxis);
+						yAxisGroup.call(yAxis);
+
+						areaPaths = areasLayer
+							.selectAll("path.area")
+							.data(seriesData, (d) => d.key)
+							.join("path")
+							.attr("class", "area")
+							.attr("fill", (d) => color(d.key))
+							.attr("d", (d) => areaBuilder(d.values));
+
+						linePaths = linesLayer
+							.selectAll("path.line")
+							.data(seriesData, (d) => d.key)
+							.join("path")
+							.attr("class", "line")
+							.attr("stroke", (d) => color(d.key))
+							.attr("d", (d) => lineBuilder(d.values));
+
+						hitLayer
+							.selectAll("path.hover-target")
+							.data(seriesData, (d) => d.key)
+							.join("path")
+							.attr("class", "hover-target")
+							.attr("d", (d) => lineBuilder(d.values))
+							.attr("tabindex", 0)
+							.on("mouseenter focus", (event, d) => setActiveSeries(d.key))
+							.on("mouseleave blur", resetActiveSeries)
+							.on("keydown", (event, d) => handleLegendKeyboard(event, d.key));
+
+						const legendItems = legend
+							.selectAll("g.legend-item")
+							.data(seriesData, (d) => d.key)
+							.join((enter) => {
+								const g = enter
+									.append("g")
+									.attr("class", "legend-item")
+									.attr("tabindex", 0);
+
+								g.append("line")
+									.attr("class", "legend-line")
+									.attr("x1", 0)
+									.attr("x2", 28)
+									.attr("y1", 0)
+									.attr("y2", 0);
+
+								g.append("text")
+									.attr("x", 36)
+									.attr("y", 0)
+									.attr("dominant-baseline", "middle");
+
+								return g;
+							});
+
+						legendItems
+							.attr("transform", (d, i) => `translate(0, ${i * 28})`)
+							.select("line.legend-line")
+							.attr("stroke", (d) => color(d.key));
+
+						legendItems
+							.select("text")
+							.text((d) => d.label);
+
+						legendItems
+							.on("mouseenter focus", (event, d) => setActiveSeries(d.key))
+							.on("mouseleave blur", resetActiveSeries)
+							.on("keydown", (event, d) => handleLegendKeyboard(event, d.key));
+
+						resetActiveSeries();
+						svg.on("mouseleave", resetActiveSeries);
 					})
 					.catch((error) => {
 						console.error(error);
-						chart.html(
-							`<p style="color: #fca5a5; font-weight: 600;">Failed to load sportsdata.csv. Check the file path and try again.</p>`
-						);
 					});
 			})();
 		</script>
