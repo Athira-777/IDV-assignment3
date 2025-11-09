@@ -52,6 +52,10 @@
 				height: min(420px, 60vh);
 			}
 
+			#venn-chart {
+				height: min(420px, 60vh);
+			}
+
 			#doodle-chart {
 				height: min(420px, 60vh);
 			}
@@ -60,6 +64,33 @@
 				will-change: transform, opacity;
 				perspective: 1200px;
 				transform-style: preserve-3d;
+			}
+
+			.venn-frame {
+				will-change: transform, opacity;
+			}
+
+			.venn-circle {
+				fill-opacity: 0.42;
+				stroke: #0f172a;
+				stroke-width: 2.2;
+				vector-effect: non-scaling-stroke;
+			}
+
+			.venn-label {
+				fill: #0f172a;
+				font-size: 1rem;
+				font-weight: 600;
+				text-anchor: middle;
+				pointer-events: none;
+			}
+
+			.venn-intersection {
+				fill: #0f172a;
+				font-size: 0.92rem;
+				font-weight: 500;
+				text-anchor: middle;
+				pointer-events: none;
 			}
 
 			.doodle-frame svg {
@@ -198,6 +229,13 @@
 					id="grid-chart"
 					role="img"
 					aria-label="Grid network view of energy states"
+				></svg>
+			</div>
+			<div class="chart-frame venn-frame">
+				<svg
+					id="venn-chart"
+					role="img"
+					aria-label="Three-set Venn diagram comparing Laksa, Chilli Crab, and Nasi Lemak"
 				></svg>
 			</div>
 			<div class="chart-frame doodle-frame">
@@ -660,6 +698,213 @@
 
 				observer.observe(document.querySelector("#grid-chart"));
 			})();
+
+				(function () {
+					const frame = document.querySelector(".venn-frame");
+					const svg = d3.select("#venn-chart");
+					if (!frame || svg.empty()) return;
+
+					frame.style.transform = "translateY(48px)";
+					frame.style.opacity = "0";
+
+					const slideObserver = new IntersectionObserver(
+						(entries) => {
+							entries.forEach((entry) => {
+								const start = 0.2;
+								const ratio = entry.intersectionRatio || 0;
+								const progress = Math.max(0, Math.min(1, (ratio - start) / (1 - start)));
+								const translate = (1 - progress) * 48;
+								frame.style.transform = `translateY(${translate}px)`;
+								frame.style.opacity = progress.toFixed(3);
+								if (progress >= 1) {
+									slideObserver.unobserve(entry.target);
+								}
+							});
+						},
+						{
+							threshold: Array.from({ length: 21 }, (_, i) => i / 20)
+						}
+					);
+
+					slideObserver.observe(frame);
+
+					const width = 720;
+					const height = 520;
+					svg
+						.attr("viewBox", `0 0 ${width} ${height}`)
+						.attr("preserveAspectRatio", "xMidYMid meet")
+						.attr("tabindex", 0)
+						.attr("focusable", true);
+
+					const items = [
+						{ key: "laksa", label: "Laksa", color: "#fb923c" },
+						{ key: "chilliCrab", label: "Chilli Crab", color: "#f472b6" },
+						{ key: "nasiLemak", label: "Nasi Lemak", color: "#4ade80" }
+					].map((item) => ({
+						...item,
+						length: item.label.replace(/\s+/g, "").length
+					}));
+
+					const baseRadius = 70;
+					const scalePerLetter = 6;
+
+					items.forEach((item) => {
+						item.radius = baseRadius + item.length * scalePerLetter;
+					});
+
+					const circlesByKey = Object.fromEntries(items.map((item) => [item.key, item]));
+
+					const targetPairOverlap = 2000;
+
+					function intersectionArea(r1, r2, d) {
+						if (d >= r1 + r2) return 0;
+						if (d <= Math.abs(r1 - r2)) {
+							const minR = Math.min(r1, r2);
+							return Math.PI * minR * minR;
+						}
+						const alpha = Math.acos((d * d + r1 * r1 - r2 * r2) / (2 * d * r1));
+						const beta = Math.acos((d * d + r2 * r2 - r1 * r1) / (2 * d * r2));
+						const term = (-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2);
+						return r1 * r1 * alpha + r2 * r2 * beta - 0.5 * Math.sqrt(Math.max(0, term));
+					}
+
+					function distanceForOverlap(r1, r2, target) {
+						const maxPossible = Math.PI * Math.min(r1, r2) * Math.min(r1, r2);
+						const clampedTarget = Math.max(50, Math.min(target, maxPossible * 0.92));
+						let low = Math.max(Math.abs(r1 - r2) + 0.001, 0.001);
+						let high = r1 + r2 - 0.001;
+						let mid = high;
+						for (let i = 0; i < 60; i++) {
+							mid = (low + high) / 2;
+							const area = intersectionArea(r1, r2, mid);
+							if (area > clampedTarget) {
+								low = mid;
+							} else {
+								high = mid;
+							}
+						}
+						return mid;
+					}
+
+					const dLaksaCrab = distanceForOverlap(circlesByKey.laksa.radius, circlesByKey.chilliCrab.radius, targetPairOverlap);
+					const dLaksaNasi = distanceForOverlap(circlesByKey.laksa.radius, circlesByKey.nasiLemak.radius, targetPairOverlap);
+					const dCrabNasi = distanceForOverlap(circlesByKey.chilliCrab.radius, circlesByKey.nasiLemak.radius, targetPairOverlap);
+
+					const laksaCenter = {
+						x: width / 2 - dLaksaCrab / 2,
+						y: height / 2 + 36
+					};
+
+					const chilliCrabCenter = {
+						x: laksaCenter.x + dLaksaCrab,
+						y: laksaCenter.y
+					};
+
+					const xNasi = (dLaksaNasi * dLaksaNasi - dCrabNasi * dCrabNasi + dLaksaCrab * dLaksaCrab) / (2 * dLaksaCrab);
+					const ySquared = Math.max(0, dLaksaNasi * dLaksaNasi - xNasi * xNasi);
+					const nasiLemakCenter = {
+						x: laksaCenter.x + xNasi,
+						y: laksaCenter.y - Math.sqrt(ySquared)
+					};
+
+					circlesByKey.laksa.center = laksaCenter;
+					circlesByKey.chilliCrab.center = chilliCrabCenter;
+					circlesByKey.nasiLemak.center = nasiLemakCenter;
+
+					const root = svg.append("g");
+
+					root
+						.append("desc")
+						.text("Circle areas correspond to word length; overlaps show shared qualities between Laksa, Chilli Crab, and Nasi Lemak.");
+
+					const circlesGroup = root.append("g");
+					const labelsGroup = root.append("g");
+					const intersectionsGroup = root.append("g");
+
+					circlesGroup
+						.selectAll("circle")
+						.data(items)
+						.join("circle")
+						.attr("class", "venn-circle")
+						.attr("fill", (d) => d.color)
+						.attr("cx", (d) => circlesByKey[d.key].center.x)
+						.attr("cy", (d) => circlesByKey[d.key].center.y)
+						.attr("r", (d) => d.radius);
+
+					labelsGroup
+						.selectAll("text.venn-label")
+						.data(items)
+						.join("text")
+						.attr("class", "venn-label")
+						.attr("x", (d) => circlesByKey[d.key].center.x)
+						.attr("y", (d) => circlesByKey[d.key].center.y - circlesByKey[d.key].radius * 0.65)
+						.text((d) => d.label);
+
+					const pairIntersections = [
+						{
+							keys: ["laksa", "nasiLemak"],
+							label: "Malay",
+							offsetY: 10
+						},
+						{
+							keys: ["laksa", "chilliCrab"],
+							label: "Seafood",
+							offsetY: 10
+						},
+						{
+							keys: ["nasiLemak", "chilliCrab"],
+							label: "Chilli",
+							offsetY: 10
+						}
+					];
+
+					pairIntersections.forEach((intersection) => {
+						const [keyA, keyB] = intersection.keys;
+						const centerA = circlesByKey[keyA].center;
+						const centerB = circlesByKey[keyB].center;
+						intersection.x = (centerA.x + centerB.x) / 2;
+						intersection.y = (centerA.y + centerB.y) / 2 + intersection.offsetY;
+					});
+
+					const centerAll = {
+						x: (laksaCenter.x + chilliCrabCenter.x + nasiLemakCenter.x) / 3,
+						y: (laksaCenter.y + chilliCrabCenter.y + nasiLemakCenter.y) / 3 + 14
+					};
+
+					const intersectionTexts = [
+						...pairIntersections,
+						{ keys: ["laksa", "chilliCrab", "nasiLemak"], label: "Singapore", x: centerAll.x, y: centerAll.y }
+					];
+
+					intersectionsGroup
+						.selectAll("text.venn-intersection")
+						.data(intersectionTexts)
+						.join("text")
+						.attr("class", "venn-intersection")
+						.attr("x", (d) => d.x)
+						.attr("y", (d) => d.y)
+						.text((d) => d.label);
+
+					svg.append("title").text("Press Enter or Space to highlight the Singapore commonality");
+
+					svg.on("keydown", (event) => {
+						if (event.key === "Enter" || event.key === " ") {
+							event.preventDefault();
+							const central = intersectionsGroup.selectAll("text").filter((d) => d.label === "Singapore");
+							central
+								.transition()
+								.duration(450)
+								.ease(d3.easeCubicOut)
+								.style("font-weight", 700)
+								.style("letter-spacing", "0.04em")
+								.transition()
+								.duration(450)
+								.ease(d3.easeCubicIn)
+								.style("font-weight", 500)
+								.style("letter-spacing", "0em");
+						}
+					});
+				})();
 
 				(function () {
 					const frame = document.querySelector(".doodle-frame");
