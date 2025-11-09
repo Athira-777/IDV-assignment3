@@ -75,6 +75,8 @@
 				stroke: #0f172a;
 				stroke-width: 2.2;
 				vector-effect: non-scaling-stroke;
+				cursor: pointer;
+				transition: fill 0.3s ease, fill-opacity 0.3s ease;
 			}
 
 			.venn-label {
@@ -82,6 +84,10 @@
 				font-size: 1rem;
 				font-weight: 600;
 				text-anchor: middle;
+				dominant-baseline: middle;
+				paint-order: stroke fill;
+				stroke: rgba(15, 23, 42, 0.35);
+				stroke-width: 2px;
 				pointer-events: none;
 			}
 
@@ -90,6 +96,7 @@
 				font-size: 0.92rem;
 				font-weight: 500;
 				text-anchor: middle;
+				dominant-baseline: middle;
 				pointer-events: none;
 			}
 
@@ -707,6 +714,8 @@
 					frame.style.transform = "translateY(48px)";
 					frame.style.opacity = "0";
 
+					let updateEntryProgress = () => {};
+
 					const slideObserver = new IntersectionObserver(
 						(entries) => {
 							entries.forEach((entry) => {
@@ -716,6 +725,7 @@
 								const translate = (1 - progress) * 48;
 								frame.style.transform = `translateY(${translate}px)`;
 								frame.style.opacity = progress.toFixed(3);
+								updateEntryProgress(progress);
 								if (progress >= 1) {
 									slideObserver.unobserve(entry.target);
 								}
@@ -736,13 +746,21 @@
 						.attr("tabindex", 0)
 						.attr("focusable", true);
 
+					const entryAngles = {
+						laksa: 0,
+						chilliCrab: 120,
+						nasiLemak: 240
+					};
+
 					const items = [
 						{ key: "laksa", label: "Laksa", color: "#fb923c" },
 						{ key: "chilliCrab", label: "Chilli Crab", color: "#f472b6" },
 						{ key: "nasiLemak", label: "Nasi Lemak", color: "#4ade80" }
 					].map((item) => ({
 						...item,
-						length: item.label.replace(/\s+/g, "").length
+						length: item.label.replace(/\s+/g, "").length,
+						entryAngleDeg: entryAngles[item.key],
+						entryAngleRad: (entryAngles[item.key] / 180) * Math.PI
 					}));
 
 					const baseRadius = 70;
@@ -754,7 +772,7 @@
 
 					const circlesByKey = Object.fromEntries(items.map((item) => [item.key, item]));
 
-					const targetPairOverlap = 2000;
+					const targetPairOverlap = 5200;
 
 					function intersectionArea(r1, r2, d) {
 						if (d >= r1 + r2) return 0;
@@ -811,17 +829,47 @@
 					circlesByKey.chilliCrab.center = chilliCrabCenter;
 					circlesByKey.nasiLemak.center = nasiLemakCenter;
 
+					const defs = svg.append("defs");
 					const root = svg.append("g");
 
 					root
 						.append("desc")
 						.text("Circle areas correspond to word length; overlaps show shared qualities between Laksa, Chilli Crab, and Nasi Lemak.");
 
+					const photoSources = {
+						laksa: "laksa.jpg",
+						chilliCrab: "chillicrab.jpg",
+						nasiLemak: "nasilemak.jpg"
+					};
+
+					const photoPatterns = defs
+						.selectAll("pattern.venn-photo")
+						.data(items)
+						.join("pattern")
+						.attr("class", "venn-photo")
+						.attr("id", (d) => `venn-photo-${d.key}`)
+						.attr("patternUnits", "objectBoundingBox")
+						.attr("patternContentUnits", "objectBoundingBox")
+						.attr("width", 1)
+						.attr("height", 1);
+
+					photoPatterns
+						.selectAll("image")
+						.data((d) => [d])
+						.join("image")
+						.attr("href", (d) => photoSources[d.key])
+						.attr("xlink:href", (d) => photoSources[d.key])
+						.attr("x", 0)
+						.attr("y", 0)
+						.attr("width", 1)
+						.attr("height", 1)
+						.attr("preserveAspectRatio", "xMidYMid slice");
+
 					const circlesGroup = root.append("g");
 					const labelsGroup = root.append("g");
 					const intersectionsGroup = root.append("g");
 
-					circlesGroup
+					const circleSelection = circlesGroup
 						.selectAll("circle")
 						.data(items)
 						.join("circle")
@@ -831,14 +879,35 @@
 						.attr("cy", (d) => circlesByKey[d.key].center.y)
 						.attr("r", (d) => d.radius);
 
-					labelsGroup
+					const labelSelection = labelsGroup
 						.selectAll("text.venn-label")
 						.data(items)
 						.join("text")
 						.attr("class", "venn-label")
 						.attr("x", (d) => circlesByKey[d.key].center.x)
-						.attr("y", (d) => circlesByKey[d.key].center.y - circlesByKey[d.key].radius * 0.65)
+						.attr("y", (d) => circlesByKey[d.key].center.y)
 						.text((d) => d.label);
+
+					function setPhotoState(key, active) {
+						circleSelection
+							.filter((d) => d.key === key)
+							.attr("fill", (d) => (active ? `url(#venn-photo-${d.key})` : d.color))
+							.style("fill-opacity", active ? 1 : null);
+
+						labelSelection
+							.filter((d) => d.key === key)
+							.style("fill", active ? "#f8fafc" : "#0f172a")
+							.style("stroke", active ? "rgba(15, 23, 42, 0.6)" : "rgba(15, 23, 42, 0.35)");
+					}
+
+					circleSelection
+						.attr("tabindex", 0)
+						.attr("role", "img")
+						.attr("aria-label", (d) => `${d.label} circle. Hover or focus to view photo.`)
+						.on("mouseenter", (event, d) => setPhotoState(d.key, true))
+						.on("mouseleave", (event, d) => setPhotoState(d.key, false))
+						.on("focus", (event, d) => setPhotoState(d.key, true))
+						.on("blur", (event, d) => setPhotoState(d.key, false));
 
 					const pairIntersections = [
 						{
@@ -876,7 +945,7 @@
 						{ keys: ["laksa", "chilliCrab", "nasiLemak"], label: "Singapore", x: centerAll.x, y: centerAll.y }
 					];
 
-					intersectionsGroup
+					const intersectionSelection = intersectionsGroup
 						.selectAll("text.venn-intersection")
 						.data(intersectionTexts)
 						.join("text")
@@ -884,6 +953,35 @@
 						.attr("x", (d) => d.x)
 						.attr("y", (d) => d.y)
 						.text((d) => d.label);
+
+					const entryDistance = 260;
+
+					updateEntryProgress = (progress) => {
+						const eased = d3.easeCubicOut(progress);
+						circleSelection
+							.attr("transform", (d) => {
+								const offset = (1 - eased) * entryDistance;
+								if (offset < 0.5) return null;
+								const dx = Math.cos(d.entryAngleRad) * offset;
+								const dy = Math.sin(d.entryAngleRad) * offset;
+								return `translate(${dx}, ${dy})`;
+							})
+							.style("opacity", Math.max(0.35, eased));
+
+						labelSelection
+							.attr("transform", (d) => {
+								const offset = (1 - eased) * entryDistance;
+								if (offset < 0.5) return null;
+								const dx = Math.cos(d.entryAngleRad) * offset;
+								const dy = Math.sin(d.entryAngleRad) * offset;
+								return `translate(${dx}, ${dy})`;
+							})
+							.style("opacity", eased);
+
+						intersectionSelection.style("opacity", Math.max(0, Math.min(1, (eased - 0.35) / 0.65)));
+					};
+
+					updateEntryProgress(0);
 
 					svg.append("title").text("Press Enter or Space to highlight the Singapore commonality");
 
