@@ -210,6 +210,16 @@
 				svg.attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet");
 
 				const root = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+				const defs = svg.append("defs");
+				const clipPathId = "line-chart-clip";
+				const clipRect = defs
+					.append("clipPath")
+					.attr("id", clipPathId)
+					.append("rect")
+					.attr("x", 0)
+					.attr("y", plotHeight)
+					.attr("width", plotWidth)
+					.attr("height", 0);
 
 				const xScale = d3.scaleTime().range([0, plotWidth]);
 				const yScale = d3.scaleLinear().range([plotHeight, 0]);
@@ -342,7 +352,8 @@
 							.join("path")
 							.attr("class", "area")
 							.attr("fill", (d) => color(d.key))
-							.attr("d", (d) => areaBuilder(d.values));
+							.attr("d", (d) => areaBuilder(d.values))
+							.attr("clip-path", `url(#${clipPathId})`);
 
 						linePaths = linesLayer
 							.selectAll("path.line")
@@ -350,7 +361,15 @@
 							.join("path")
 							.attr("class", "line")
 							.attr("stroke", (d) => color(d.key))
-							.attr("d", (d) => lineBuilder(d.values));
+							.attr("d", (d) => lineBuilder(d.values))
+							.attr("clip-path", `url(#${clipPathId})`);
+
+						clipRect
+							.transition()
+							.duration(1200)
+							.ease(d3.easeCubicOut)
+							.attr("y", 0)
+							.attr("height", plotHeight);
 
 						hitLayer
 							.selectAll("path.hover-target")
