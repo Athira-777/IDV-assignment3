@@ -746,6 +746,8 @@
 						.attr("tabindex", 0)
 						.attr("focusable", true);
 
+					const sizeScale = 2;
+
 					const entryAngles = {
 						laksa: 0,
 						chilliCrab: 120,
@@ -763,8 +765,8 @@
 						entryAngleRad: (entryAngles[item.key] / 180) * Math.PI
 					}));
 
-					const baseRadius = 70;
-					const scalePerLetter = 6;
+					const baseRadius = 70 * sizeScale;
+					const scalePerLetter = 6 * sizeScale;
 
 					items.forEach((item) => {
 						item.radius = baseRadius + item.length * scalePerLetter;
@@ -772,7 +774,7 @@
 
 					const circlesByKey = Object.fromEntries(items.map((item) => [item.key, item]));
 
-					const targetPairOverlap = 5200;
+					const targetPairOverlap = 5200 * sizeScale * sizeScale;
 
 					function intersectionArea(r1, r2, d) {
 						if (d >= r1 + r2) return 0;
@@ -828,6 +830,50 @@
 					circlesByKey.laksa.center = laksaCenter;
 					circlesByKey.chilliCrab.center = chilliCrabCenter;
 					circlesByKey.nasiLemak.center = nasiLemakCenter;
+
+					const margin = 36;
+					let minX = Infinity;
+					let maxX = -Infinity;
+					let minY = Infinity;
+					let maxY = -Infinity;
+
+					items.forEach((item) => {
+						const center = circlesByKey[item.key].center;
+						minX = Math.min(minX, center.x - item.radius);
+						maxX = Math.max(maxX, center.x + item.radius);
+						minY = Math.min(minY, center.y - item.radius);
+						maxY = Math.max(maxY, center.y + item.radius);
+					});
+
+					let shiftX = 0;
+					if (minX < margin) {
+						shiftX += margin - minX;
+					}
+					if (maxX + shiftX > width - margin) {
+						shiftX -= maxX + shiftX - (width - margin);
+					}
+
+					let shiftY = 0;
+					if (minY < margin) {
+						shiftY += margin - minY;
+					}
+					if (maxY + shiftY > height - margin) {
+						shiftY -= maxY + shiftY - (height - margin);
+					}
+
+					if (shiftX !== 0 || shiftY !== 0) {
+						items.forEach((item) => {
+							const center = circlesByKey[item.key].center;
+							center.x += shiftX;
+							center.y += shiftY;
+						});
+						laksaCenter.x += shiftX;
+						laksaCenter.y += shiftY;
+						chilliCrabCenter.x += shiftX;
+						chilliCrabCenter.y += shiftY;
+						nasiLemakCenter.x += shiftX;
+						nasiLemakCenter.y += shiftY;
+					}
 
 					const defs = svg.append("defs");
 					const root = svg.append("g");
@@ -954,7 +1000,7 @@
 						.attr("y", (d) => d.y)
 						.text((d) => d.label);
 
-					const entryDistance = 260;
+					const entryDistance = 260 * sizeScale;
 
 					updateEntryProgress = (progress) => {
 						const eased = d3.easeCubicOut(progress);
