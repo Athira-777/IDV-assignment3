@@ -746,7 +746,7 @@
 						.attr("tabindex", 0)
 						.attr("focusable", true);
 
-					const sizeScale = 2;
+					const sizeScale = 1.4;
 
 					const entryAngles = {
 						laksa: 0,
@@ -832,33 +832,37 @@
 					circlesByKey.nasiLemak.center = nasiLemakCenter;
 
 					const margin = 36 * sizeScale;
-					let minX = Infinity;
-					let maxX = -Infinity;
-					let minY = Infinity;
-					let maxY = -Infinity;
 
-					items.forEach((item) => {
-						const center = circlesByKey[item.key].center;
-						minX = Math.min(minX, center.x - item.radius);
-						maxX = Math.max(maxX, center.x + item.radius);
-						minY = Math.min(minY, center.y - item.radius);
-						maxY = Math.max(maxY, center.y + item.radius);
-					});
-
-					let shiftX = 0;
-					if (minX < margin) {
-						shiftX += margin - minX;
-					}
-					if (maxX + shiftX > width - margin) {
-						shiftX -= maxX + shiftX - (width - margin);
+					function computeBounds() {
+						let minX = Infinity;
+						let maxX = -Infinity;
+						let minY = Infinity;
+						let maxY = -Infinity;
+						items.forEach((item) => {
+							const center = circlesByKey[item.key].center;
+							minX = Math.min(minX, center.x - item.radius);
+							maxX = Math.max(maxX, center.x + item.radius);
+							minY = Math.min(minY, center.y - item.radius);
+							maxY = Math.max(maxY, center.y + item.radius);
+						});
+						return { minX, maxX, minY, maxY };
 					}
 
-					let shiftY = 0;
-					if (minY < margin) {
-						shiftY += margin - minY;
+					const bounds = computeBounds();
+					let shiftX = width / 2 - (bounds.minX + bounds.maxX) / 2;
+					let shiftY = height / 2 - (bounds.minY + bounds.maxY) / 2;
+
+					if (bounds.minX + shiftX < margin) {
+						shiftX += margin - (bounds.minX + shiftX);
 					}
-					if (maxY + shiftY > height - margin) {
-						shiftY -= maxY + shiftY - (height - margin);
+					if (bounds.maxX + shiftX > width - margin) {
+						shiftX -= (bounds.maxX + shiftX) - (width - margin);
+					}
+					if (bounds.minY + shiftY < margin) {
+						shiftY += margin - (bounds.minY + shiftY);
+					}
+					if (bounds.maxY + shiftY > height - margin) {
+						shiftY -= (bounds.maxY + shiftY) - (height - margin);
 					}
 
 					if (shiftX !== 0 || shiftY !== 0) {
